@@ -1,0 +1,23 @@
+{
+   "content_scripts": [ {
+      "js": [ "inject.js" ],
+      "matches": [ "https://*/*" ],
+      "all_frames": true,
+      "match_about_blank": true,
+      "run_at": "document_start"
+   } ],
+   "browser_action": {
+     "default_icon": "icon.png",
+	 "default_title": "Debug WebRTC?"
+   },
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "manifest_version": 2,
+  "name": "WebRTC Externals",
+  "version": "0.0.1",
+  "icons": {
+    "128": "logo.png"
+  }
+}
