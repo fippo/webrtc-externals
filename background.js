@@ -18,8 +18,9 @@ browser.runtime.onConnect.addListener(function (channel) {
         var data = {lid: message[1], pid: 'pid', type: message[2], value: message[3], time: Date.now()};
         if (method === 'create') {
             data.url = port.sender.url;
+            // TODO: iterate and remove credential.
             data.rtcConfiguration = args[0];
-            data.constraints = args[1];
+            data.constraints = JSON.stringify(args[1]);
             addPeerConnection(data);
             return;
         }

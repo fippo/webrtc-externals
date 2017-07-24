@@ -19,6 +19,9 @@ var inject = '('+function() {
     pc.addEventListener('removestream', function(e) {
       trace('onremovestream', pc._id, e.stream.id + ' ' + e.stream.getTracks().map(function(t) { return t.kind + ':' + t.id; }));
     });
+    pc.addEventListener('track', function(e) {
+      trace('ontrack', pc._id, e.track.id + ' ' + e.streams.map(function(s) { return s.id; }));
+    });
     pc.addEventListener('signalingstatechange', function() {
       trace('onsignalingstatechange', pc._id, pc.signalingState);
     });
@@ -34,7 +37,6 @@ var inject = '('+function() {
     pc.addEventListener('datachannel', function(event) {
       trace('ondatachannel', pc._id, [event.channel.id, event.channel.label]);
     });
-
     return pc;
   };
   window.RTCPeerConnection.prototype = origPeerConnection.prototype;
@@ -104,7 +106,7 @@ var inject = '('+function() {
     }
   });
 
-  ['addStream'].forEach(function(method) {
+  ['addStream', 'removeStream'].forEach(function(method) {
     var nativeMethod = window.RTCPeerConnection.prototype[method];
     if (nativeMethod) {
       window.RTCPeerConnection.prototype[method] = function() {
@@ -120,12 +122,37 @@ var inject = '('+function() {
     }
   });
 
-  ['close'].forEach(function(method) {
+  ['addTrack'].forEach(function(method) {
     var nativeMethod = window.RTCPeerConnection.prototype[method];
     if (nativeMethod) {
       window.RTCPeerConnection.prototype[method] = function() {
         var pc = this;
-        trace(method, pc._id);
+        var track = arguments[0];
+        var streams = [].slice.call(arguments, 1);
+        trace(method, pc._id, track.id + ' ' + streams.map(function(s) { return s.id; }));
+        return nativeMethod.apply(pc, arguments);
+      };
+    }
+  });
+
+  ['removeTrack'].forEach(function(method) {
+    var nativeMethod = window.RTCPeerConnection.prototype[method];
+    if (nativeMethod) {
+      window.RTCPeerConnection.prototype[method] = function() {
+        var pc = this;
+        var track = arguments[0].track;
+        trace(method, pc._id, track.kind + ' ' + track.id);
+        return nativeMethod.apply(pc, arguments);
+      };
+    }
+  });
+
+  ['close', 'createDataChannel'].forEach(function(method) {
+    var nativeMethod = window.RTCPeerConnection.prototype[method];
+    if (nativeMethod) {
+      window.RTCPeerConnection.prototype[method] = function() {
+        var pc = this;
+        trace(method, pc._id, arguments);
         return nativeMethod.apply(pc, arguments);
       };
     }
