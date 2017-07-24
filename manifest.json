@@ -16,6 +16,7 @@
   },
   "manifest_version": 2,
   "name": "WebRTC Externals",
+  "author": "Philipp Hancke",
   "version": "0.0.1",
   "icons": {
     "128": "logo.png"
