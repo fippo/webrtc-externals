@@ -46,6 +46,31 @@ browser.runtime.onConnect.addListener(function (channel) {
         case 'navigator.getUserMediaFailure':
             // TODO: find a way to display them.
             break;
+        case 'getStats':
+            // webrtc-internals uses a weird format for the stats...
+			data.reports = [];
+			Object.keys(args).forEach(function(reportName) {
+                var report = args[reportName];
+                var values = [];
+                Object.keys(report).forEach(function(statName) {
+                    if (statName === 'timestamp') {
+                        return;
+                    }
+                    values.push(statName);
+                    values.push(report[statName]);
+                });
+
+                data.reports.push({
+                    type: report.type,
+                    id: report.id,
+                    stats: {
+                        timestamp: report.timestamp,
+                        values: values,
+                    },
+                });
+			});
+            addStats(data);
+            break;
         case 'createOfferOnSuccess':
         case 'setLocalDescription':
         case 'setRemoteDescription':

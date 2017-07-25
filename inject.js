@@ -3,6 +3,19 @@ var inject = '('+function() {
     window.postMessage(['WebRTCExternals', id, method, JSON.stringify(args || {})], '*');
   }
 
+  // transforms a maplike to an object. Mostly for getStats +
+  // JSON.parse(JSON.stringify())
+  function map2obj(m) {
+    if (!m.entries) {
+      return m;
+    }
+    var o = {};
+    m.forEach(function(v, k) {
+      o[k] = v;
+    });
+    return o;
+  }
+
   var id = 0;
   var origPeerConnection = window.RTCPeerConnection;
   window.RTCPeerConnection = function() {
@@ -37,6 +50,16 @@ var inject = '('+function() {
     pc.addEventListener('datachannel', function(event) {
       trace('ondatachannel', pc._id, [event.channel.id, event.channel.label]);
     });
+
+    window.setTimeout(function poll() {
+      if (pc.signalingState !== 'closed') {
+        window.setTimeout(poll, 1000);
+      }
+      pc.getStats()
+      .then(function(stats) {
+        trace('getStats', pc._id, map2obj(stats));
+      });
+    }, 1000);
     return pc;
   };
   window.RTCPeerConnection.prototype = origPeerConnection.prototype;
