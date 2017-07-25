@@ -8,19 +8,22 @@ browser.browserAction.onClicked.addListener(function() {
 });
 
 browser.runtime.onConnect.addListener(function (channel) {
+    var url = channel.sender.url;
+    var pid = Math.random().toString(36).substr(2, 10);
+    channel.onDisconnect.addListener(function() {
+        // TODO: remove / mark everything associated with that page/pid
+    });
     channel.onMessage.addListener(function (message, port) {
         if (message[0] !== 'WebRTCExternals') return;
-        console.log(message[1], message[2], JSON.parse(message[3]));
 
         var method = message[2];
         var args = message[3] ? JSON.parse(message[3]) : undefined;
         // emulate webrtc-internals format
-        var data = {lid: message[1], pid: 'pid', type: message[2], time: Date.now()};
+        var data = {lid: message[1], pid: pid, type: message[2], time: Date.now()};
         data.value = typeof args === 'string' ? args : message[3];
-        var peerConnectionElement = $(getPeerConnectionId(data));
         switch(method) {
         case 'create':
-            data.url = port.sender.url;
+            data.url = url;
             // TODO: iterate and remove credential.
             data.rtcConfiguration = args[0];
             data.constraints = JSON.stringify(args[1]);
@@ -30,8 +33,8 @@ browser.runtime.onConnect.addListener(function (channel) {
         case 'navigator.getUserMedia':
             data = {
                 rid: 0,
-                pid: 'pid',
-                origin: port.sender.url,
+                pid: pid,
+                origin: url,
                 audio: JSON.stringify(args.audio),
                 video: JSON.stringify(args.video),
             };
@@ -49,7 +52,7 @@ browser.runtime.onConnect.addListener(function (channel) {
             data.value = 'type: ' + args.type + ', sdp:\n' + args.sdp;
             // fall through
         default:
-            addPeerConnectionUpdate(peerConnectionElement, data);
+            addPeerConnectionUpdate($(getPeerConnectionId(data)), data);
         }
     });
 });
