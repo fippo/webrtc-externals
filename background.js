@@ -69,7 +69,9 @@ browser.runtime.onConnect.addListener(function (channel) {
                     },
                 });
 			});
-            addStats(data);
+            if (navigator.userAgent.indexOf('Edge') === -1) {
+                addStats(data);
+            }
             break;
         case 'createOfferOnSuccess':
         case 'setLocalDescription':
