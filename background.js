@@ -15,16 +15,41 @@ browser.runtime.onConnect.addListener(function (channel) {
         var method = message[2];
         var args = message[3] ? JSON.parse(message[3]) : undefined;
         // emulate webrtc-internals format
-        var data = {lid: message[1], pid: 'pid', type: message[2], value: message[3], time: Date.now()};
-        if (method === 'create') {
+        var data = {lid: message[1], pid: 'pid', type: message[2], time: Date.now()};
+        data.value = typeof args === 'string' ? args : message[3];
+        var peerConnectionElement = $(getPeerConnectionId(data));
+        switch(method) {
+        case 'create':
             data.url = port.sender.url;
             // TODO: iterate and remove credential.
             data.rtcConfiguration = args[0];
             data.constraints = JSON.stringify(args[1]);
             addPeerConnection(data);
-            return;
+            break;
+        case 'navigator.mediaDevices.getUserMedia':
+        case 'navigator.getUserMedia':
+            data = {
+                rid: 0,
+                pid: 'pid',
+                origin: port.sender.url,
+                audio: JSON.stringify(args.audio),
+                video: JSON.stringify(args.video),
+            };
+            addGetUserMedia(data);
+            break;
+        case 'navigator.mediaDevices.getUserMediaOnSuccess':
+        case 'navigator.mediaDevices.getUserMediaOnFailure':
+        case 'navigator.getUserMediaOnSuccess':
+        case 'navigator.getUserMediaFailure':
+            // TODO: find a way to display them.
+            break;
+        case 'createOfferOnSuccess':
+        case 'setLocalDescription':
+        case 'setRemoteDescription':
+            data.value = 'type: ' + args.type + ', sdp:\n' + args.sdp;
+            // fall through
+        default:
+            addPeerConnectionUpdate(peerConnectionElement, data);
         }
-        var peerConnectionElement = $(getPeerConnectionId(data));
-        addPeerConnectionUpdate(peerConnectionElement, data);
     });
 });

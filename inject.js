@@ -129,7 +129,7 @@ var inject = '('+function() {
         var pc = this;
         var track = arguments[0];
         var streams = [].slice.call(arguments, 1);
-        trace(method, pc._id, track.id + ' ' + streams.map(function(s) { return s.id; }));
+        trace(method, pc._id, track.kind + ':' + track.id + ' ' + streams.map(function(s) { return 'stream:' + s.id; }));
         return nativeMethod.apply(pc, arguments);
       };
     }
@@ -141,7 +141,7 @@ var inject = '('+function() {
       window.RTCPeerConnection.prototype[method] = function() {
         var pc = this;
         var track = arguments[0].track;
-        trace(method, pc._id, track.kind + ' ' + track.id);
+        trace(method, pc._id, track ? track.kind + ' ' + track.id : 'null');
         return nativeMethod.apply(pc, arguments);
       };
     }
@@ -157,6 +157,64 @@ var inject = '('+function() {
       };
     }
   });
+
+  function dumpStream(stream) {
+    return {
+      id: stream.id,
+      tracks: stream.getTracks().map(function(track) {
+        return {
+          id: track.id,                 // unique identifier (GUID) for the track
+          kind: track.kind,             // `audio` or `video`
+          label: track.label,           // identified the track source
+          enabled: track.enabled,       // application can control it
+          muted: track.muted,           // application cannot control it (read-only)
+          readyState: track.readyState, // `live` or `ended`
+        };
+      }),
+    };
+  }
+  var origGetUserMedia;
+  var gum;
+  if (navigator.getUserMedia) {
+    origGetUserMedia = navigator.getUserMedia.bind(navigator);
+    gum = function() {
+      trace('getUserMedia', null, arguments[0]);
+      var cb = arguments[1];
+      var eb = arguments[2];
+      origGetUserMedia(arguments[0],
+        function(stream) {
+          // we log the stream id, track ids and tracks readystate since that is ended GUM fails
+          // to acquire the cam (in chrome)
+          trace('getUserMediaOnSuccess', null, dumpStream(stream));
+          if (cb) {
+            cb(stream);
+          }
+        },
+        function(err) {
+          trace('getUserMediaOnFailure', null, err.name);
+          if (eb) {
+            eb(err);
+          }
+        }
+      );
+    };
+    navigator.getUserMedia = gum.bind(navigator);
+  }
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    origGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+    gum = function() {
+      trace('navigator.mediaDevices.getUserMedia', null, arguments[0]);
+      return origGetUserMedia.apply(navigator.mediaDevices, arguments)
+      .then(function(stream) {
+        trace('navigator.mediaDevices.getUserMediaOnSuccess', null, dumpStream(stream));
+        return stream;
+      }, function(err) {
+        trace('navigator.mediaDevices.getUserMediaOnFailure', null, err.name);
+        return Promise.reject(err);
+      });
+    };
+    navigator.mediaDevices.getUserMedia = gum.bind(navigator.mediaDevices);
+  }
 }+')();';
 
 document.addEventListener('DOMContentLoaded', function() {
