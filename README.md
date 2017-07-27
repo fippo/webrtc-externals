@@ -5,6 +5,9 @@ aims to allow much of the same workflow that developers are using on Chrome's [w
 internal page. However, it is implemented as an extension and therefore does not rely on any internal infrastructure.
 As a result, it can be run in other browsers like Firefox or Microsoft Edge.
 
+## Known issues
+The content script only overrides RTCPeerConnection and not the Chrome legacy RTCPeerConnection. If the site you are testing is still using the old variant you might suggest they upgrade.
+
 # LICENSE
 MIT
 
