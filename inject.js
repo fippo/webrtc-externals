@@ -152,7 +152,7 @@ var inject = '('+function() {
         var pc = this;
         var track = arguments[0];
         var streams = [].slice.call(arguments, 1);
-        trace(method, pc._id, track.kind + ':' + track.id + ' ' + streams.map(function(s) { return 'stream:' + s.id; }));
+        trace(method, pc._id, track.kind + ':' + track.id + ' ' + streams.map(function(s) { return 'stream:' + s.id; }).join(';'));
         return nativeMethod.apply(pc, arguments);
       };
     }
@@ -164,7 +164,7 @@ var inject = '('+function() {
       window.RTCPeerConnection.prototype[method] = function() {
         var pc = this;
         var track = arguments[0].track;
-        trace(method, pc._id, track ? track.kind + ' ' + track.id : 'null');
+        trace(method, pc._id, track ? track.kind + ':' + track.id : 'null');
         return nativeMethod.apply(pc, arguments);
       };
     }
