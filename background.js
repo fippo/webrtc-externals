@@ -36,6 +36,7 @@ browser.runtime.onConnect.addListener(function (channel) {
                 origin: url,
                 audio: JSON.stringify(args.audio),
                 video: JSON.stringify(args.video),
+                getUserMediaId: message[1],
             };
             addGetUserMedia(data);
             break;

@@ -201,20 +201,21 @@ var inject = '('+function() {
   if (navigator.getUserMedia) {
     origGetUserMedia = navigator.getUserMedia.bind(navigator);
     gum = function() {
-      trace('getUserMedia', null, arguments[0]);
+      var id = Math.random().toString(36).substr(2, 10);
+      trace('getUserMedia', id, arguments[0]);
       var cb = arguments[1];
       var eb = arguments[2];
       origGetUserMedia(arguments[0],
         function(stream) {
           // we log the stream id, track ids and tracks readystate since that is ended GUM fails
           // to acquire the cam (in chrome)
-          trace('getUserMediaOnSuccess', null, dumpStream(stream));
+          trace('getUserMediaOnSuccess', id, dumpStream(stream));
           if (cb) {
             cb(stream);
           }
         },
         function(err) {
-          trace('getUserMediaOnFailure', null, err.name);
+          trace('getUserMediaOnFailure', id, err.name);
           if (eb) {
             eb(err);
           }
@@ -226,13 +227,14 @@ var inject = '('+function() {
   if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     origGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
     gum = function() {
-      trace('navigator.mediaDevices.getUserMedia', null, arguments[0]);
+      var id = Math.random().toString(36).substr(2, 10);
+      trace('navigator.mediaDevices.getUserMedia', id, arguments[0]);
       return origGetUserMedia.apply(navigator.mediaDevices, arguments)
       .then(function(stream) {
-        trace('navigator.mediaDevices.getUserMediaOnSuccess', null, dumpStream(stream));
+        trace('navigator.mediaDevices.getUserMediaOnSuccess', id, dumpStream(stream));
         return stream;
       }, function(err) {
-        trace('navigator.mediaDevices.getUserMediaOnFailure', null, err.name);
+        trace('navigator.mediaDevices.getUserMediaOnFailure', id, err.name);
         return Promise.reject(err);
       });
     };
