@@ -3,11 +3,10 @@ if (typeof browser === 'undefined') {
     browser = chrome;
 }
 
-browser.browserAction.onClicked.addListener(function() {
-    browser.tabs.create({'url': browser.extension.getURL('background.html')});
-});
-
 browser.runtime.onConnect.addListener(function (channel) {
+    if (window === browser.extension.getBackgroundPage()) {
+        return;
+    }
     var url = channel.sender.url;
     var pid = Math.random().toString(36).substr(2, 10);
     channel.onDisconnect.addListener(function() {
