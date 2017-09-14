@@ -18,6 +18,9 @@ var inject = '('+function() {
 
   var id = 0;
   var origPeerConnection = window.RTCPeerConnection;
+  if (!origPeerConnection) {
+    return; // can happen e.g. when peerconnection is disabled in Firefox.
+  }
   window.RTCPeerConnection = function() {
     var pc = new origPeerConnection(arguments[0], arguments[1]);
     pc._id = id++;
