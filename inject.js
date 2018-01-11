@@ -155,7 +155,7 @@ var inject = '('+function() {
         var pc = this;
         var track = arguments[0];
         var streams = [].slice.call(arguments, 1);
-        trace(method, pc._id, track.kind + ':' + track.id + ' ' + streams.map(function(s) { return 'stream:' + s.id; }).join(';'));
+        trace(method, id, track.kind + ':' + track.id + ' ' + (streams.map(function(s) { return 'stream:' + s.id; }).join(';') || '-'));
         return nativeMethod.apply(pc, arguments);
       };
     }
