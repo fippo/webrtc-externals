@@ -155,8 +155,19 @@ var inject = '('+function() {
         var pc = this;
         var track = arguments[0];
         var streams = [].slice.call(arguments, 1);
-        trace(method, id, track.kind + ':' + track.id + ' ' + (streams.map(function(s) { return 'stream:' + s.id; }).join(';') || '-'));
-        return nativeMethod.apply(pc, arguments);
+        trace(method, pc._id, track.kind + ':' + track.id + ' ' + (streams.map(function(s) { return 'stream:' + s.id; }).join(';') || '-'));
+        var sender = nativeMethod.apply(pc, arguments);
+        if (sender && sender.replaceTrack) {
+          var nativeReplaceTrack = sender.replaceTrack;
+          sender.replaceTrack = function(withTrack) {
+            trace('replaceTrack', pc._id,
+                (sender.track ? sender.track.kind + ':' + sender.track.id : 'null') +
+                ' with ' +
+                (withTrack ?  withTrack.kind + ':' + withTrack.id : 'null'));
+            return nativeReplaceTrack.apply(sender, arguments);
+          }
+        }
+        return sender;
       };
     }
   });
