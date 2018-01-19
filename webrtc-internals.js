@@ -1689,6 +1689,11 @@ var PeerConnectionUpdateTable = (function() {
         valueContainer.parentElement.classList.add('update-log-failure');
       }
 
+      // Point out legacy addStream/removeStream APIs.
+      if (update.type === "addStream" || update.type === "removeStream") {
+        valueContainer.parentElement.classList.add('update-log-legacy-api-usage');
+      }
+
       var value = update.value;
       // map internal names and values to names and events from the
       // specification. This is a display change which shall not
