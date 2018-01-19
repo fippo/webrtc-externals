@@ -2048,6 +2048,7 @@ function addStats(data) {
         break;
       default:
         drawSingleReport(peerConnectionElement, report);
+        break;
     }
   }
 }
