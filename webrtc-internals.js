@@ -2039,7 +2039,16 @@ function addStats(data) {
   for (var i = 0; i < data.reports.length; ++i) {
     var report = data.reports[i];
     statsTable.addStatsReport(peerConnectionElement, report);
-    drawSingleReport(peerConnectionElement, report);
+    switch(report.type) {
+      case 'codec':
+      case 'certificate':
+      case 'local-candidate':
+      case 'remote-candidate':
+        // some report types have no useful data to display as graphs.
+        break;
+      default:
+        drawSingleReport(peerConnectionElement, report);
+    }
   }
 }
 
