@@ -1690,8 +1690,12 @@ var PeerConnectionUpdateTable = (function() {
       }
 
       // Point out legacy addStream/removeStream APIs.
-      if (update.type === "addStream" || update.type === "removeStream") {
-        valueContainer.parentElement.classList.add('update-log-legacy-api-usage');
+      if (update.type === 'addStream' || update.type === 'removeStream') {
+        valueContainer.parentElement.classList.add(
+            'update-log-legacy-api-usage');
+        valueContainer.parentElement.title = update.type + ' is no longer ' +
+            'part of the WebRTC API and may be removed in future versions. ' +
+            'Use the addTrack/removeTrack APIs instead.';
       }
 
       var value = update.value;
