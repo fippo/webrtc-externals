@@ -36,7 +36,7 @@ var inject = '('+function() {
       trace('onremovestream', pc._id, e.stream.id + ' ' + e.stream.getTracks().map(function(t) { return t.kind + ':' + t.id; }));
     });
     pc.addEventListener('track', function(e) {
-      trace('ontrack', pc._id, e.track.id + ' ' + e.streams.map(function(s) { return s.id; }));
+      trace('ontrack', pc._id, e.track.kind + ':' + e.track.id + ' ' + e.streams.map(function(s) { return 'stream:' + s.id; }));
     });
     pc.addEventListener('signalingstatechange', function() {
       trace('onsignalingstatechange', pc._id, pc.signalingState);
